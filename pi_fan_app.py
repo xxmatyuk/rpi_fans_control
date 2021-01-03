@@ -198,10 +198,12 @@ def pwm_cleanup():
 def stats():
     global fans, current_pwm_duty, current_pwm_frequency
     rpm_a6, rpm_a12 = _get_current_rpm()
+    t1, t2 = _get_sensor_temperature(app.config['DHT_PIN_16']), _get_sensor_temperature(app.config['DHT_PIN_20'])
     stats = {
         "pwm_enabled": True if fans else False,
-        "t1_temperature": _get_sensor_temperature(app.config['DHT_PIN_16']),
-        "t2_temperature":_get_sensor_temperature(app.config['DHT_PIN_20']),
+        "t1_temperature": t1,
+        "t2_temperature": t2,
+        "avg_temperature": (t1+t2)/2,
         "pwm_duty_cycle": current_pwm_duty if fans else 0,
         "pwm_frequency": current_pwm_frequency if fans else 0,
         "rpm_a6": rpm_a6,
