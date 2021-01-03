@@ -1,0 +1,9 @@
+server {
+    listen 8080;
+    server_name raspberrypi.local;
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:/home/pi/pi_fan_app/pi_fan.sock;
+    }
+}

@@ -1,0 +1,15 @@
+# FS path: /etc/systemd/system
+
+[Unit]
+Description=uWSGI instance to serve pi_fan_app
+After=network.target
+
+[Service]
+User=pi
+Group=www-data
+WorkingDirectory=/home/pi/pi_fan_app
+Environment="PATH=/home/pi/pi_fan_app/pi_fan_env/bin"
+ExecStart=/home/pi/pi_fan_app/pi_fan_env/bin/uwsgi --ini pi_fan_app.ini
+
+[Install]
+WantedBy=multi-user.target
