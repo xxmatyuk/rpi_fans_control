@@ -1,79 +1,15 @@
-import atexit
+
 import json
-import adafruit_dht
-import RPi.GPIO as GPIO
 
 from flask import Flask, jsonify
+from flask_redis import FlaskRedis
 from werkzeug.exceptions import InternalServerError
 from apscheduler.schedulers.background import BackgroundScheduler
 
-# Flask stuff
+# Flask app
 app = Flask(__name__)
 app.config.from_object('settings')
-
-# Global vars
-fans = None
-current_pwm_duty = None
-current_pwm_frequency = None
-
-
-def _get_dht_sensor(pin):
-    """Returns DHT sesnor instance"""
-    d = None
-    try:
-        d = adafruit_dht.DHT22(pin)
-    except RuntimeError:
-        app.logger.error("Unable to initialize DHT sensor. Re-trying.")
-        d.exit()
-        d = adafruit_dht.DHT22(pin)
-    return d
-
-
-def _init_pwm():
-    """Inits PWM fans controls"""
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    GPIO.setup(app.config['FANS_PIN'], GPIO.OUT, initial=GPIO.LOW)
-
-    global fans
-    try:
-        fans = GPIO.PWM(app.config['FANS_PIN'], app.config['PWM_DEFAULT_FREQ'])
-    except RuntimeError:
-        fans = GPIO.PWM(app.config['FANS_PIN'], app.config['PWM_DEFAULT_FREQ'])
-
-    return fans
-    
-
-def _stop_fans():
-    """Stops fans without loosing controls"""
-    global fans, current_pwm_duty
-    if fans:
-        fans.stop()
-        current_pwm_duty = 0
-
-
-def _stop_pwm_fans_control():
-    """Stops fans and does cleanup"""
-    global fans
-    _stop_fans()
-    GPIO.cleanup()
-    fans = None
-
-
-def _set_fans_pwm_duty_cycle(percent):
-    """Sets fans' duty cycle"""
-    global fans, current_pwm_duty
-    if fans:
-        fans.ChangeDutyCycle(percent)
-        current_pwm_duty = percent
-
-
-def _set_fans_pwm_frequency(freq):
-    """Sets fans' frequency"""
-    global fans, current_pwm_frequency
-    if fans:
-        fans.ChangeFrequency(freq)
-        current_pwm_frequency = freq
+redis_client = FlaskRedis(app)
 
 
 def _get_current_rpm():
@@ -90,20 +26,6 @@ def _get_current_rpm():
             (current_pwm_duty*app.config['DEFAULT_RPM_A6'])/100, 
             (current_pwm_duty*app.config['DEFAULT_RPM_A12'])/100
         )
-
-
-def _get_sensor_temperature(pin):
-    """Gets tempreature mesure of a given sensor"""
-    try:
-        d = _get_dht_sensor(pin)
-        if d:
-            t = d.temperature
-            d.exit()
-            return t
-    except Exception as e:
-        app.logger.error("Unable to read temperature from pin %i. Error: %s" % (pin, str(e)))
-        if d:
-            d.exit()
 
 
 def _get_average_temperature():
@@ -212,7 +134,6 @@ def pwm_cleanup():
 
 @app.route("/stats")
 def stats():
-    global fans, current_pwm_duty, current_pwm_frequency
     rpm_a6, rpm_a12 = _get_current_rpm()
     t1, t2 = _get_sensor_temperature(app.config['DHT_PIN_16']), _get_sensor_temperature(app.config['DHT_PIN_20'])
     stats = {
@@ -228,14 +149,11 @@ def stats():
     
     return jsonify(stats)
 
-# Cron tasks
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=_run_smart_controls, trigger="interval", seconds=30)
-scheduler.start()
 
-# Exit signals
-atexit.register(_stop_pwm_fans_control)
-atexit.register(lambda: scheduler.shutdown())
+@app.route("/test-redis")
+def redis_test():
+    return jsonify({"test": redis_client.get("test")})
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
