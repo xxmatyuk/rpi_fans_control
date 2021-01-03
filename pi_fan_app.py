@@ -159,7 +159,7 @@ def pwm_set_duty(percent):
     global fans, current_pwm_duty
     if fans:
         _set_fans_pwm_duty_cycle(percent)
-        return _get_response(app.config['DUTY_SET_MSG'].fomat(pwm_duty=current_pwm_duty))
+        return _get_response(app.config['DUTY_SET_MSG'].format(pwm_duty=current_pwm_duty))
 
     return _get_response(app.config['NO_ACTION_MSG'])
 
