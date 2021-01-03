@@ -5,6 +5,7 @@ import RPi.GPIO as GPIO
 
 from flask import Flask, jsonify
 from werkzeug.exceptions import InternalServerError
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Flask stuff
 app = Flask(__name__)
@@ -15,9 +16,6 @@ fans = None
 current_pwm_duty = None
 current_pwm_frequency = None
 
-# TODO:
-# 1. add "smart" part via Flask cronjobs
-# 2. add all the installation part to readme
 
 def _get_dht_sensor(pin):
     """Returns DHT sesnor instance"""
@@ -36,9 +34,14 @@ def _init_pwm():
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     GPIO.setup(app.config['FANS_PIN'], GPIO.OUT, initial=GPIO.LOW)
-    
+
     global fans
-    fans = GPIO.PWM(app.config['FANS_PIN'], app.config['PWM_DEFAULT_FREQ'])
+    try:
+        fans = GPIO.PWM(app.config['FANS_PIN'], app.config['PWM_DEFAULT_FREQ'])
+    except RuntimeError:
+        fans = GPIO.PWM(app.config['FANS_PIN'], app.config['PWM_DEFAULT_FREQ'])
+
+    return fans
     
 
 def _stop_fans():
@@ -101,7 +104,6 @@ def _get_sensor_temperature(pin):
         app.logger.error("Unable to read temperature from pin %i. Error: %s" % (pin, str(e)))
         if d:
             d.exit()
-        return -100
 
 
 def _get_average_temperature():
@@ -115,6 +117,19 @@ def _get_average_temperature():
 def _get_response(msg):
     """Wraps message into flask Response object"""
     return jsonify({"status": msg})
+
+
+def _run_smart_controls():
+    """Enables fans in case temperature goes above the threshold"""
+    fans = _init_pwm()
+    avg_temp = _get_average_temperature()
+    if avg_temp and fans:
+        if avg_temp > app.config['TEMPERATURE_THRESHOLD']:
+            app.logger.info("Enabling fans the smart way based on temperature %sC" % str(avg_temp))
+            fans.start(app.config['PWM_DEFAULT_DUTY'])
+        else:
+            app.logger.info("Disabling fans the smart way based on temperature %sC" % str(avg_temp))
+            fans.stop()
 
 
 @app.errorhandler(InternalServerError)
@@ -153,6 +168,7 @@ def pwm_start():
         app.logger.error("Failed to start PWM")
 
     return _get_response(app.config['NO_ACTION_MSG'])
+
 
 @app.route("/pwm/set-duty/<int:percent>")
 def pwm_set_duty(percent):
@@ -203,7 +219,7 @@ def stats():
         "pwm_enabled": True if fans else False,
         "t1_temperature": t1,
         "t2_temperature": t2,
-        "avg_temperature": (t1+t2)/2,
+        "avg_temperature": (t1+t2)/2 if t1 and t2 else None,
         "pwm_duty_cycle": current_pwm_duty if fans else 0,
         "pwm_frequency": current_pwm_frequency if fans else 0,
         "rpm_a6": rpm_a6,
@@ -212,9 +228,14 @@ def stats():
     
     return jsonify(stats)
 
+# Cron tasks
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=_run_smart_controls, trigger="interval", seconds=30)
+scheduler.start()
 
+# Exit signals
 atexit.register(_stop_pwm_fans_control)
-
+atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
