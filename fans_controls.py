@@ -30,17 +30,17 @@ def run_fans_controls():
     global fans
     while True:
         # Time to sleep
-        time.sleep(3)
+        time.sleep(1)
 
-        # TODO: they come as bytes, fix that
-        pwm_enabled = redis_client.get(settings.PWM_ENABLED_KEY)
-        new_pwm_enabled = redis_client.get(settings.NEW_PWM_ENABLED_KEY)
-        curr_ctrl_mode = redis_client.get(settings.CURR_CTRL_MODE)
-        new_ctrl_mode = redis_client.get(settings.NEW_CTRL_MODE)
-        curr_pwm_duty = redis_client.get(settings.CURR_PWM_DUTY)
-        new_pwm_duty = redis_client.get(settings.NEW_PWM_DUTY)
-        curr_t1_temp = redis_client.get(settings.CURR_T1_TEMP)
-        curr_t2_temp = redis_client.get(settings.CURR_T2_TEMP)
+        # Get all values
+        pwm_enabled = redis_client.pwm_enabled
+        new_pwm_enabled = redis_client.new_pwm_enabled
+        curr_ctrl_mode = redis_client.current_ctrl_mode
+        new_ctrl_mode = redis_client.new_ctrl_mode
+        curr_pwm_duty = redis_client.current_pwm_duty
+        new_pwm_duty = redis_client.new_pwm_duty
+        curr_t1_temp = redis_client.current_t1_temperature
+        curr_t2_temp = redis_client.current_t2_temperature
 
         # PWM state has changed
         if pwm_enabled != new_pwm_enabled:
@@ -48,12 +48,12 @@ def run_fans_controls():
                 if fans:
                     fans.stop()
                 GPIO.cleanup()
-                redis_client.set(settings.PWM_ENABLED_KEY, False)
+                redis_client.set_value(settings.PWM_ENABLED, False)
                 fans = None
             else:
                 GPIO.setup(settings.FANS_PIN, GPIO.OUT, initial=GPIO.LOW)
                 fans = GPIO.PWM(settings.FANS_PIN, settings.PWM_DEFAULT_FREQ)
-                fans.start(0)
+                fans.start(settings.PWM_DEFAULT_DUTY)
                 continue
         
         # PWM has not changed and it's disabled, do nothing
@@ -63,10 +63,10 @@ def run_fans_controls():
         # PWM is enabled and control mode has changed
         if curr_ctrl_mode != new_ctrl_mode:
             if new_ctrl_mode == settings.MANUAL_MODE:
-                redis_client.set(settings.CURR_CTRL_MODE, settings.MANUAL_MODE)
+                redis_client.set_value(settings.CURR_CTRL_MODE, settings.MANUAL_MODE)
                 continue
             else:
-                redis_client.set(settings.CURR_CTRL_MODE, settings.AUTO_MODE)
+                redis_client.set_value(settings.CURR_CTRL_MODE, settings.AUTO_MODE)
                 continue
             
         # Manual mode
@@ -76,7 +76,7 @@ def run_fans_controls():
             else:
                 if fans:
                     fans.ChangeDutyCycle(new_pwm_duty)
-                    redis_client.set(settings.CURR_PWM_DUTY, new_pwm_duty)
+                    redis_client.set_value(settings.CURR_PWM_DUTY, new_pwm_duty)
                     continue
         
         # Auto mode

@@ -2,16 +2,16 @@
 import json
 
 from flask import Flask, jsonify
-from flask_redis import FlaskRedis
 from werkzeug.exceptions import InternalServerError
 
+from redis_client import RedisClient
 
 # Flask app
 app = Flask(__name__)
 app.config.from_object('settings')
 
-# Flask-redis client
-redis_client = FlaskRedis(app)
+# Redis client
+redis_client = RedisClient()
 
 
 def _get_current_rpm(pwm_enabled, current_pwm_duty):
@@ -32,8 +32,8 @@ def _get_current_rpm(pwm_enabled, current_pwm_duty):
 
 def _get_average_temperature():
     """Gets average temperature from two available sensors"""
-    t1 = redis_client.get(app.config["CURR_T1_TEMP"])
-    t2 = redis_client.get(app.config["CURR_T2_TEMP"])
+    t1 = redis_client.current_t1_temperature
+    t2 = redis_client.current_t2_temperature
     if t1 and t2:
         return (t1 + t2)/2
 
@@ -62,11 +62,10 @@ def get_avg_temp():
 
 @app.route("/pwm/enable")
 def pwm_enable():
-    pwm_enabled = redis_client.get(app.config["PWM_ENABLED_KEY"])
-    if not pwm_enabled:
-        redis_client.set(app.config["NEW_PWM_ENABLED_KEY"], True)
-        redis_client.set(app.config["NEW_CTRL_MODE"], app.config["MANUAL_MODE"])
-        redis_client.set(app.config["NEW_PWM_DUTY"], app.config["PWM_DEFAULT_DUTY"])
+    if not redis_client.pwm_enabled:
+        redis_client.set_value(app.config["NEW_PWM_ENABLED"], True)
+        redis_client.set_value(app.config["NEW_CTRL_MODE"], app.config["MANUAL_MODE"])
+        redis_client.set_value(app.config["NEW_PWM_DUTY"], app.config["PWM_DEFAULT_DUTY"])
         return _get_response(app.config['PWM_ENABLED_MSG'])
 
     return _get_response(app.config['NO_ACTION_MSG'])
@@ -74,10 +73,9 @@ def pwm_enable():
 
 @app.route("/pwm/disable")
 def pwm_enable():
-    pwm_enabled = redis_client.get(app.config["PWM_ENABLED_KEY"])
-    if pwm_enabled:
-        redis_client.set(app.config["NEW_PWM_ENABLED_KEY"], False)
-        redis_client.set(app.config["NEW_PWM_DUTY"], 0)
+    if redis_client.pwm_enabled:
+        redis_client.set_value(app.config["NEW_PWM_ENABLED"], False)
+        redis_client.set_value(app.config["NEW_PWM_DUTY"], 0)
         return _get_response(app.config['PWM_DISABLED_MSG'])
 
     return _get_response(app.config['NO_ACTION_MSG'])
@@ -85,10 +83,8 @@ def pwm_enable():
 
 @app.route("/pwm/set-duty/<int:percent>")
 def pwm_set_duty(percent):
-    pwm_enabled = redis_client.get(app.config["PWM_ENABLED_KEY"])
-    curr_ctrl_mode = redis_client.get(app.config["CURR_CTRL_MODE"])
-    if pwm_enabled and curr_ctrl_mode == app.config["MANUAL_MODE"]:
-        redis_client.set(app.config["NEW_PWM_DUTY"], percent)
+    if redis_client.pwm_enabled and redis_client.current_ctrl_mode == app.config["MANUAL_MODE"]:
+        redis_client.set_value(app.config["NEW_PWM_DUTY"], percent)
         return _get_response(app.config['DUTY_SET_MSG'].format(pwm_duty=percent))
 
     return _get_response(app.config['NO_ACTION_MSG'])
@@ -96,11 +92,8 @@ def pwm_set_duty(percent):
 
 @app.route("/pwm/stop-fans")
 def stop_fans():
-    pwm_enabled = redis_client.get(app.config["PWM_ENABLED_KEY"])
-    curr_ctrl_mode = redis_client.get(app.config["CURR_CTRL_MODE"])
-
-    if pwm_enabled and curr_ctrl_mode == app.config["MANUAL_MODE"]:
-        redis_client.set(app.config["NEW_PWM_DUTY"], 0)
+    if redis_client.pwm_enabled and redis_client.current_ctrl_mode == app.config["MANUAL_MODE"]:
+        redis_client.set_value(app.config["NEW_PWM_DUTY"], 0)
         return _get_response(app.config['FANS_STOPPED_MSG'])
 
     return _get_response(app.config['NO_ACTION_MSG'])
@@ -108,11 +101,11 @@ def stop_fans():
 
 @app.route("/stats")
 def stats():
-    pwm_enabled = redis_client.get(app.config["PWM_ENABLED_KEY"])
-    curr_ctrl_mode = redis_client.get(app.config["CURR_CTRL_MODE"])
-    current_pwm_duty = redis_client.get(app.config["CURR_PWM_DUTY"])
-    t1 = redis_client.get(app.config["CURR_T1_TEMP"])
-    t2 = redis_client.get(app.config["CURR_T2_TEMP"])
+    pwm_enabled = redis_client.pwm_enabled
+    curr_ctrl_mode = redis_client.current_ctrl_mode
+    current_pwm_duty = redis_client.current_pwm_duty
+    t1 = redis_client.current_t1_temperature
+    t2 = redis_client.current_t2_temperature
     rpm_a6, rpm_a12 = _get_current_rpm(pwm_enabled, current_pwm_duty)
     stats = {
         "current_conttol_mode": curr_ctrl_mode,

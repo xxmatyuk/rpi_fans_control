@@ -35,7 +35,7 @@ def _get_sensor_temperature(pin):
 
 def _set_temperature(k, v):
     try:
-        redis_client.set(k, v)
+        redis_client.set_value(k, v)
     except Exception:
         pass
 
@@ -46,10 +46,10 @@ def run_sensors_readings():
         t2 = _get_sensor_temperature(settings.DHT_PIN_20)
         
         if t1:
-            _set_temperature("current_t1_temp", t1)
+            _set_temperature(settings.CURR_T1_TEMP, t1)
         
         if t2:
-            _set_temperature("current_t2_temp", t2)
+            _set_temperature(settings.CURR_T1_TEMP, t2)
         
         time.sleep(10)
 

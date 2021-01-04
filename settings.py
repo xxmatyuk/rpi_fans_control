@@ -21,15 +21,14 @@ FREQ_SET_MSG = "Frequency is set to: {pwm_frequency}"
 
 # Redis
 REDIS_URL = "redis://:@localhost:6379/0"
-PWM_ENABLED_KEY = "pwm_enabled"
-NEW_PWM_ENABLED_KEY = "new_pwm_enabled"
+PWM_ENABLED = "pwm_enabled"
+NEW_PWM_ENABLED = "new_pwm_enabled"
 CURR_CTRL_MODE = "curr_ctrl_mode"
 NEW_CTRL_MODE = "new_ctrl_mode"
 CURR_PWM_DUTY = "curr_pwm_duty"
 NEW_PWM_DUTY = "new_pwm_duty"
 CURR_T1_TEMP = "curr_t1_temp"
 CURR_T2_TEMP = "curr_t1_temp"
-
 
 # Modes
 MANUAL_MODE = 'manual'
