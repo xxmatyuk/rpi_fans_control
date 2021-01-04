@@ -29,6 +29,9 @@ def _stop_pwm_fans_control():
 def run_fans_controls():
     global fans
     while True:
+        # Time to sleep
+        time.sleep(3)
+
         # TODO: they come as bytes, fix that
         pwm_enabled = redis_client.get(settings.PWM_ENABLED_KEY)
         new_pwm_enabled = redis_client.get(settings.NEW_PWM_ENABLED_KEY)
@@ -82,11 +85,10 @@ def run_fans_controls():
                 avg_temp = (curr_t1_temp + curr_t1_temp)/2
                 if avg_temp > settings.TEMPERATURE_THRESHOLD and fans:
                     fans.ChangeDutyCycle(settings.PWM_DEFAULT_DUTY)
+                    continue
                 else:
                     fans.stop()
-        
-        # Time to sleep
-        time.sleep(3)
+                    continue
 
 # Do a clean-up
 atexit.register(_stop_pwm_fans_control)

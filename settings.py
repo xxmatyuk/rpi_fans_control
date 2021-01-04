@@ -12,7 +12,8 @@ TEMPERATURE_THRESHOLD = 24.1
 
 # Response messages
 NO_ACTION_MSG = "No action taken."
-PWM_STARTED_MSG = "Started."
+PWM_ENABLED_MSG = "Enabled."
+PWM_DISABLED_MSG = "Disabled."
 FANS_STOPPED_MSG = "Stopped."
 CONTROLS_STOPPED_MSG = "Controls stopped."
 DUTY_SET_MSG = "Duty is set to: {pwm_duty}"
