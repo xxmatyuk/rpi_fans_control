@@ -122,7 +122,7 @@ def stats():
     t2 = redis_client.current_t2_temperature
     rpm_a6, rpm_a12 = _get_current_rpm(pwm_enabled, current_pwm_duty)
     stats = {
-        "current_conttol_mode": curr_ctrl_mode,
+        "current_control_mode": curr_ctrl_mode,
         "pwm_enabled": pwm_enabled,
         "t1_temperature": t1,
         "t2_temperature": t2,
