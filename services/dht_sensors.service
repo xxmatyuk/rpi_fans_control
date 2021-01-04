@@ -5,9 +5,9 @@ After=network.target
 [Service]
 User=pi
 Group=pi
-WorkingDirectory=/home/pi/pi_fan_app
-Environment="PATH=/home/pi/pi_fan_app/pi_fan_env/bin"
-ExecStart=/home/pi/pi_fan_app/pi_fan_env/python /home/pi/pi_fan_app/dht_sensors.py
+WorkingDirectory=/home/pi/rpi_fans_control
+Environment="PATH=/home/pi/rpi_fans_control/pi_fan_env/bin"
+ExecStart=/home/pi/rpi_fans_control/pi_fan_env/python /home/pi/rpi_fans_control/dht_sensors.py
 StandardInput=tty-force
 
 [Install]
