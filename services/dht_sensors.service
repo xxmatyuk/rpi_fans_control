@@ -7,7 +7,7 @@ User=pi
 Group=pi
 WorkingDirectory=/home/pi/rpi_fans_control
 Environment="PATH=/home/pi/rpi_fans_control/pi_fan_env/bin"
-ExecStart=/home/pi/rpi_fans_control/pi_fan_env/python /home/pi/rpi_fans_control/dht_sensors.py
+ExecStart=/home/pi/rpi_fans_control/pi_fan_env/bin/python /home/pi/rpi_fans_control/dht_sensors.py
 StandardInput=tty-force
 
 [Install]
