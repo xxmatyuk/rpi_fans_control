@@ -8,6 +8,7 @@ Group=pi
 WorkingDirectory=/home/pi/pi_fan_app
 Environment="PATH=/home/pi/pi_fan_app/pi_fan_env/bin"
 ExecStart=/home/pi/pi_fan_app/pi_fan_env/python /home/pi/pi_fan_app/dht_sensors.py
+StandardInput=tty-force
 
 [Install]
 WantedBy=multi-user.target
