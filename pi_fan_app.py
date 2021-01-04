@@ -77,7 +77,10 @@ def get_avg_temp():
 def pwm_enable():
     mode = request.args.get('mode', default=app.config["MANUAL_MODE"], type=str)
     current_ctrl_mode = redis_client.current_ctrl_mode
-    if not redis_client.pwm_enabled or (redis_client.pwm_enabled and mode != current_ctrl_mode):
+    if redis_client.pwm_enabled and mode != current_ctrl_mode:
+        redis_client.set_value(app.config["NEW_CTRL_MODE"], mode)
+        return _get_response(app.config['PWM_ENABLED_MSG'])
+    elif not redis_client.pwm_enabled:
         redis_client.set_value(app.config["NEW_PWM_ENABLED"], True)
         redis_client.set_value(app.config["NEW_CTRL_MODE"], mode)
         redis_client.set_value(app.config["NEW_PWM_DUTY"], app.config["PWM_DEFAULT_DUTY"])
