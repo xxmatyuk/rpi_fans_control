@@ -1,0 +1,5 @@
+wheel
+uwsgi
+flask
+redis
+adafruit-circuitpython-dht
