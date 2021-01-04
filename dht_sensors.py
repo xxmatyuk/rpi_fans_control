@@ -14,10 +14,10 @@ def _get_dht_sensor(pin):
     """Returns DHT sesnor instance"""
     d = None
     try:
-        d = adafruit_dht.DHT22(pin, use_pulseio=False)
+        d = adafruit_dht.DHT22(pin)
     except RuntimeError:
         d.exit()
-        d = adafruit_dht.DHT22(pin, use_pulseio=False)
+        d = adafruit_dht.DHT22(pin)
     return d
 
 
@@ -33,12 +33,6 @@ def _get_sensor_temperature(pin):
         if d:
             d.exit()
 
-def _set_temperature(k, v):
-    try:
-        redis_client.set_value(k, v)
-    except Exception:
-        pass
-
 
 def run_sensors_readings():
     while True:
@@ -46,12 +40,12 @@ def run_sensors_readings():
         t2 = _get_sensor_temperature(settings.DHT_PIN_20)
         
         if t1:
-            _set_temperature(settings.CURR_T1_TEMP, t1)
+            redis_client.set_value(settings.CURR_T1_TEMP, t1)
         
         if t2:
-            _set_temperature(settings.CURR_T1_TEMP, t2)
+            redis_client.set_value(settings.CURR_T2_TEMP, t2)
         
-        time.sleep(10)
+        time.sleep(settings.DHT_POLLING_TIMEOUT_SECONDS)
 
 
 if __name__ == "__main__":

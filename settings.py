@@ -4,11 +4,13 @@ PWM_DEFAULT_FREQ = 100
 PWM_DEFAULT_DUTY = 88
 DEFAULT_RPM_A6 = 3000
 DEFAULT_RPM_A12 = 2000
+PWM_CTRL_TIMEOUT = 1
 
 # Sensors
 DHT_PIN_16 = 16
 DHT_PIN_20 = 20
 TEMPERATURE_THRESHOLD = 24.1
+DHT_POLLING_TIMEOUT_SECONDS = 5
 
 # Response messages
 NO_ACTION_MSG = "No action taken."
@@ -28,7 +30,7 @@ NEW_CTRL_MODE = "new_ctrl_mode"
 CURR_PWM_DUTY = "curr_pwm_duty"
 NEW_PWM_DUTY = "new_pwm_duty"
 CURR_T1_TEMP = "curr_t1_temp"
-CURR_T2_TEMP = "curr_t1_temp"
+CURR_T2_TEMP = "curr_t2_temp"
 
 # Modes
 MANUAL_MODE = 'manual'

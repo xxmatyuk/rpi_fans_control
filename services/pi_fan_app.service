@@ -1,5 +1,3 @@
-# FS path: /etc/systemd/system
-
 [Unit]
 Description=uWSGI instance to serve pi_fan_app
 After=network.target

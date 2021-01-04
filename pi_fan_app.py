@@ -1,7 +1,8 @@
 
+import atexit
 import json
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from werkzeug.exceptions import InternalServerError
 
 from redis_client import RedisClient
@@ -12,6 +13,18 @@ app.config.from_object('settings')
 
 # Redis client
 redis_client = RedisClient()
+
+
+def _init_redis():
+    """Fills Redis with default values"""
+    redis_client.set_value(app.config["PWM_ENABLED"], False)
+    redis_client.set_value(app.config["NEW_PWM_ENABLED"], False)
+    redis_client.set_value(app.config["CURR_CTRL_MODE"], app.config["MANUAL_MODE"])
+    redis_client.set_value(app.config["NEW_CTRL_MODE"], app.config["MANUAL_MODE"])
+    redis_client.set_value(app.config["CURR_PWM_DUTY"], 0)
+    redis_client.set_value(app.config["NEW_PWM_DUTY"], 0)
+    redis_client.set_value(app.config["CURR_T1_TEMP"], -100.0)
+    redis_client.set_value(app.config["CURR_T2_TEMP"], -100.0)
 
 
 def _get_current_rpm(pwm_enabled, current_pwm_duty):
@@ -63,8 +76,9 @@ def get_avg_temp():
 @app.route("/pwm/enable")
 def pwm_enable():
     if not redis_client.pwm_enabled:
+        mode = request.args.get('mode', default=app.config["MANUAL_MODE"], type=str)
         redis_client.set_value(app.config["NEW_PWM_ENABLED"], True)
-        redis_client.set_value(app.config["NEW_CTRL_MODE"], app.config["MANUAL_MODE"])
+        redis_client.set_value(app.config["NEW_CTRL_MODE"], mode)
         redis_client.set_value(app.config["NEW_PWM_DUTY"], app.config["PWM_DEFAULT_DUTY"])
         return _get_response(app.config['PWM_ENABLED_MSG'])
 
@@ -72,7 +86,7 @@ def pwm_enable():
 
 
 @app.route("/pwm/disable")
-def pwm_enable():
+def pwm_disable():
     if redis_client.pwm_enabled:
         redis_client.set_value(app.config["NEW_PWM_ENABLED"], False)
         redis_client.set_value(app.config["NEW_PWM_DUTY"], 0)
@@ -120,6 +134,8 @@ def stats():
 
     return jsonify(stats)
 
+# Re-init redis just in case
+atexit.register(_init_redis)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

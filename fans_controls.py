@@ -30,7 +30,7 @@ def run_fans_controls():
     global fans
     while True:
         # Time to sleep
-        time.sleep(1)
+        time.sleep(settings.PWM_CTRL_TIMEOUT)
 
         # Get all values
         pwm_enabled = redis_client.pwm_enabled
@@ -51,6 +51,7 @@ def run_fans_controls():
                 redis_client.set_value(settings.PWM_ENABLED, False)
                 fans = None
             else:
+                redis_client.set_value(settings.PWM_ENABLED, True)
                 GPIO.setup(settings.FANS_PIN, GPIO.OUT, initial=GPIO.LOW)
                 fans = GPIO.PWM(settings.FANS_PIN, settings.PWM_DEFAULT_FREQ)
                 fans.start(settings.PWM_DEFAULT_DUTY)
@@ -85,9 +86,11 @@ def run_fans_controls():
                 avg_temp = (curr_t1_temp + curr_t1_temp)/2
                 if avg_temp > settings.TEMPERATURE_THRESHOLD and fans:
                     fans.ChangeDutyCycle(settings.PWM_DEFAULT_DUTY)
+                    redis_client.set_value(settings.CURR_PWM_DUTY, settings.PWM_DEFAULT_DUTY)
                     continue
                 else:
-                    fans.stop()
+                    fans.ChangeDutyCycle(0)
+                    redis_client.set_value(settings.CURR_PWM_DUTY, 0)
                     continue
 
 # Do a clean-up
