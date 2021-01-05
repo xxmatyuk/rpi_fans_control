@@ -83,7 +83,7 @@ def run_fans_controls():
         # Auto mode
         if curr_ctrl_mode == settings.AUTO_MODE:
             if curr_t1_temp and curr_t2_temp:
-                avg_temp = (curr_t1_temp + curr_t1_temp)/2
+                avg_temp = (curr_t1_temp + curr_t2_temp)/2
                 if avg_temp > settings.TEMPERATURE_THRESHOLD and fans:
                     fans.ChangeDutyCycle(settings.PWM_DEFAULT_DUTY)
                     redis_client.set_value(settings.CURR_PWM_DUTY, settings.PWM_DEFAULT_DUTY)
