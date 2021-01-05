@@ -18,6 +18,13 @@ class RedisClient:
         return self._conn.get(k)
 
 
+    def _get_typed_value(self, v, t):
+        try:
+            return t(v)
+        except (TypeError, ValueError):
+            return None
+
+
     def set_value(self, k, v):
         if type(v) != str:
             v = str(v)
@@ -26,18 +33,12 @@ class RedisClient:
 
     @property
     def pwm_enabled(self):
-        try:
-            return True if self._get(settings.PWM_ENABLED) == "True" else False
-        except (TypeError, ValueError):
-            return None
+        return True if self._get(settings.PWM_ENABLED) == "True" else False
 
 
     @property
     def new_pwm_enabled(self):
-        try:
-            return True if self._get(settings.NEW_PWM_ENABLED) == "True" else False
-        except (TypeError, ValueError):
-            return None
+        return True if self._get(settings.NEW_PWM_ENABLED) == "True" else False
 
 
     @property
@@ -52,31 +53,18 @@ class RedisClient:
 
     @property
     def current_pwm_duty(self):
-        try:
-            return int(self._get(settings.CURR_PWM_DUTY))
-        except (TypeError, ValueError):
-            return None
-
+        return self._get_typed_value(self._get(settings.CURR_PWM_DUTY), int)
+    
 
     @property
     def new_pwm_duty(self):
-        try:
-            return int(self._get(settings.NEW_PWM_DUTY))
-        except (TypeError, ValueError):
-            return None
-
+        return self._get_typed_value(self._get(settings.NEW_PWM_DUTY), int)
 
     @property
     def current_t1_temperature(self):
-        try:
-            return float(self._get(settings.CURR_T1_TEMP))
-        except (TypeError, ValueError):
-            return None
+        return self._get_typed_value(self._get(settings.CURR_T1_TEMP), float)
 
 
     @property
     def current_t2_temperature(self):
-        try:
-            return float(self._get(settings.CURR_T2_TEMP))
-        except (TypeError, ValueError):
-            return None
+        return self._get_typed_value(self._get(settings.CURR_T2_TEMP), float)
