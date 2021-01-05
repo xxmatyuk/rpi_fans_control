@@ -89,9 +89,10 @@ def run_fans_controls():
                     redis_client.set_value(settings.CURR_PWM_DUTY, settings.PWM_DEFAULT_DUTY)
                     continue
                 else:
-                    fans.ChangeDutyCycle(0)
-                    redis_client.set_value(settings.CURR_PWM_DUTY, 0)
-                    continue
+                    if fans:
+                        fans.ChangeDutyCycle(0)
+                        redis_client.set_value(settings.CURR_PWM_DUTY, 0)
+                        continue
 
 # Do a clean-up
 atexit.register(_stop_pwm_fans_control)
