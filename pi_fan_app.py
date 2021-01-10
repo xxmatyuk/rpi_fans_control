@@ -18,6 +18,8 @@ redis_client = RedisClient()
 def _init_redis():
     """Fills Redis with default values"""
     redis_client.set_value(app.config["PWM_ENABLED"], False)
+    redis_client.set_value(app.config["LIGHTS_ENABLED"], False)
+    redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], False)
     redis_client.set_value(app.config["NEW_PWM_ENABLED"], False)
     redis_client.set_value(app.config["CURR_CTRL_MODE"], app.config["MANUAL_MODE"])
     redis_client.set_value(app.config["NEW_CTRL_MODE"], app.config["MANUAL_MODE"])
@@ -117,6 +119,24 @@ def stop_fans():
     return _get_response(app.config['NO_ACTION_MSG'])
 
 
+@app.route("/lights/on")
+def lights_on():
+    if not redis_client.lights_enabled:
+        redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], True)
+        return _get_response(app.config['LIGHTS_ON'])
+
+    return _get_response(app.config['NO_ACTION_MSG'])
+
+
+@app.route("/lights/off")
+def lights_on():
+    if redis_client.lights_enabled:
+        redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], False)
+        return _get_response(app.config['LIGHTS_OFF'])
+
+    return _get_response(app.config['NO_ACTION_MSG'])
+
+
 @app.route("/stats")
 def stats():
     pwm_enabled = redis_client.pwm_enabled
@@ -125,9 +145,11 @@ def stats():
     t1 = redis_client.current_t1_temperature
     t2 = redis_client.current_t2_temperature
     rpm_a6, rpm_a12 = _get_current_rpm(pwm_enabled, current_pwm_duty)
+    lights_enables = redis_client.lights_enabled
     stats = {
         "current_control_mode": curr_ctrl_mode,
         "pwm_enabled": pwm_enabled,
+        "lights_enables": lights_enables,
         "t1_temperature": t1,
         "t2_temperature": t2,
         "avg_temperature": (t1+t2)/2 if t1 and t2 else None,

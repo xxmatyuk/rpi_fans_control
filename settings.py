@@ -6,6 +6,9 @@ DEFAULT_RPM_A6 = 3000
 DEFAULT_RPM_A12 = 2000
 PWM_CTRL_TIMEOUT = 1
 
+# Lights
+LIGHTS_PIN = 12
+
 # Sensors
 DHT_PIN_16 = 16
 DHT_PIN_20 = 20
@@ -20,6 +23,8 @@ FANS_STOPPED_MSG = "Stopped."
 CONTROLS_STOPPED_MSG = "Controls stopped."
 DUTY_SET_MSG = "Duty is set to: {pwm_duty}"
 FREQ_SET_MSG = "Frequency is set to: {pwm_frequency}"
+LIGHTS_ON = "Lights are enabled"
+LIGHTS_OFF = "Lights are disabled"
 
 # Redis
 REDIS_URL = "redis://:@localhost:6379/0"
@@ -31,6 +36,8 @@ CURR_PWM_DUTY = "curr_pwm_duty"
 NEW_PWM_DUTY = "new_pwm_duty"
 CURR_T1_TEMP = "curr_t1_temp"
 CURR_T2_TEMP = "curr_t2_temp"
+LIGHTS_ENABLED = "lights_enables"
+NEW_LIGHTS_ENABLED = "new_lights_enables"
 
 # Modes
 MANUAL_MODE = 'manual'

@@ -15,19 +15,25 @@ redis_client = RedisClient()
 
 # Globals
 fans = None
+lights = GPIO.PWM(settings.LIGHTS_PIN, settings.PWM_DEFAULT_FREQ)
 
 
-def _stop_pwm_fans_control():
+def _stop_pwm_control():
     """Stops fans and does a cleanup"""
-    global fans
+    global fans, lights
     if fans:
         fans.stop()
         fans = None
+    
+    if lights:
+        lights.stop()
+        lights = None
+
     GPIO.cleanup()
 
 
-def run_fans_controls():
-    global fans
+def run_pwm_controls():
+    global fans, lights
     while True:
         # Time to sleep
         time.sleep(settings.PWM_CTRL_TIMEOUT)
@@ -35,6 +41,8 @@ def run_fans_controls():
         # Get all values
         pwm_enabled = redis_client.pwm_enabled
         new_pwm_enabled = redis_client.new_pwm_enabled
+        lights_enabled = redis_client.lights_enabled
+        new_lights_enables = redis_client.new_lights_enabled
         curr_ctrl_mode = redis_client.current_ctrl_mode
         new_ctrl_mode = redis_client.new_ctrl_mode
         curr_pwm_duty = redis_client.current_pwm_duty
@@ -42,6 +50,18 @@ def run_fans_controls():
         curr_t1_temp = redis_client.current_t1_temperature
         curr_t2_temp = redis_client.current_t2_temperature
 
+        # Lights state has chanched
+        if lights_enabled != new_pwm_enabled:
+            redis_client.set_value(settings.NEW_LIGHTS_ENABLED, new_pwm_enabled)
+            if new_pwm_enabled == False:
+                if lights:
+                    lights.stop()
+                    lights = None
+            else:
+                lights = GPIO.PWM(settings.LIGHTS_PIN, settings.PWM_DEFAULT_FREQ)
+                lights.start(100)
+            continue
+        
         # PWM state has changed
         if pwm_enabled != new_pwm_enabled:
             if new_pwm_enabled == False:
@@ -104,7 +124,7 @@ def run_fans_controls():
                         continue
 
 # Do a clean-up
-atexit.register(_stop_pwm_fans_control)
+atexit.register(_stop_pwm_control)
 
 if __name__ == "__main__":
-    run_fans_controls()
+    run_pwm_controls()

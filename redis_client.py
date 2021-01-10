@@ -32,6 +32,15 @@ class RedisClient:
 
 
     @property
+    def lights_enabled(self):
+        return True if self._get(settings.LIGHTS_ENABLED) == "True" else False
+
+    @property
+    def new_lights_enabled(self):
+        return True if self._get(settings.NEW_LIGHTS_ENABLED) == "True" else False
+
+
+    @property
     def pwm_enabled(self):
         return True if self._get(settings.PWM_ENABLED) == "True" else False
 
@@ -59,6 +68,7 @@ class RedisClient:
     @property
     def new_pwm_duty(self):
         return self._get_typed_value(self._get(settings.NEW_PWM_DUTY), int)
+
 
     @property
     def current_t1_temperature(self):
