@@ -58,7 +58,7 @@ def run_pwm_controls():
             else:
                 GPIO.setup(settings.LIGHTS_PIN, GPIO.OUT, initial=GPIO.LOW)
                 if not lights:
-                    lights = GPIO.PWM(settings.LIGHTS_PIN, settings.PWM_DEFAULT_FREQ)
+                    lights = GPIO.PWM(settings.LIGHTS_PIN, settings.LIGHT_DEFAULT_FREQ)
                 lights.start(settings.LIGHTS_PWM_DEFAULT)
                 continue
         
