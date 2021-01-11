@@ -51,15 +51,15 @@ def run_pwm_controls():
         curr_t2_temp = redis_client.current_t2_temperature
 
         # Lights state has chanched
-        if lights_enabled != new_pwm_enabled:
-            redis_client.set_value(settings.NEW_LIGHTS_ENABLED, new_pwm_enabled)
-            if new_pwm_enabled == False:
+        if lights_enabled != new_lights_enables:
+            redis_client.set_value(settings.NEW_LIGHTS_ENABLED, new_lights_enables)
+            if new_lights_enables == False:
                 if lights:
-                    lights.stop()
-                    lights = None
+                    lights.start(0)
             else:
+                GPIO.setup(settings.LIGHTS_PIN, GPIO.OUT, initial=GPIO.LOW)
                 lights = GPIO.PWM(settings.LIGHTS_PIN, settings.PWM_DEFAULT_FREQ)
-                lights.start(100)
+                lights.start(settings.LIGHTS_PWM_DEFAULT)
             continue
         
         # PWM state has changed
