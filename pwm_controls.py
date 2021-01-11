@@ -15,8 +15,7 @@ redis_client = RedisClient()
 
 # Globals
 fans = None
-lights = GPIO.PWM(settings.LIGHTS_PIN, settings.PWM_DEFAULT_FREQ)
-
+lights = None
 
 def _stop_pwm_control():
     """Stops fans and does a cleanup"""
