@@ -37,8 +37,8 @@ CURR_PWM_DUTY = "curr_pwm_duty"
 NEW_PWM_DUTY = "new_pwm_duty"
 CURR_T1_TEMP = "curr_t1_temp"
 CURR_T2_TEMP = "curr_t2_temp"
-LIGHTS_ENABLED = "lights_enables"
-NEW_LIGHTS_ENABLED = "new_lights_enables"
+LIGHTS_ENABLED = "lights_enabled"
+NEW_LIGHTS_ENABLED = "new_lights_enabled"
 
 # Modes
 MANUAL_MODE = 'manual'

@@ -41,7 +41,7 @@ def run_pwm_controls():
         pwm_enabled = redis_client.pwm_enabled
         new_pwm_enabled = redis_client.new_pwm_enabled
         lights_enabled = redis_client.lights_enabled
-        new_lights_enables = redis_client.new_lights_enabled
+        new_lights_enabled = redis_client.new_lights_enabled
         curr_ctrl_mode = redis_client.current_ctrl_mode
         new_ctrl_mode = redis_client.new_ctrl_mode
         curr_pwm_duty = redis_client.current_pwm_duty
@@ -50,9 +50,9 @@ def run_pwm_controls():
         curr_t2_temp = redis_client.current_t2_temperature
 
         # Lights state has chanched
-        if lights_enabled != new_lights_enables:
-            redis_client.set_value(settings.NEW_LIGHTS_ENABLED, new_lights_enables)
-            if new_lights_enables == False:
+        if lights_enabled != new_lights_enabled:
+            redis_client.set_value(settings.NEW_LIGHTS_ENABLED, new_lights_enabled)
+            if new_lights_enabled == False:
                 if lights:
                     lights.start(0)
             else:
