@@ -145,11 +145,11 @@ def stats():
     t1 = redis_client.current_t1_temperature
     t2 = redis_client.current_t2_temperature
     rpm_a6, rpm_a12 = _get_current_rpm(pwm_enabled, current_pwm_duty)
-    lights_enables = redis_client.lights_enabled
+    lights_enabled = redis_client.lights_enabled
     stats = {
         "current_control_mode": curr_ctrl_mode,
         "pwm_enabled": pwm_enabled,
-        "lights_enables": lights_enables,
+        "lights_enabled": lights_enabled,
         "t1_temperature": t1,
         "t2_temperature": t2,
         "avg_temperature": (t1+t2)/2 if t1 and t2 else None,
