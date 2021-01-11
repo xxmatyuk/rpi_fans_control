@@ -129,7 +129,7 @@ def lights_on():
 
 
 @app.route("/lights/off")
-def lights_on():
+def lights_off():
     if redis_client.lights_enabled:
         redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], False)
         return _get_response(app.config['LIGHTS_OFF'])
