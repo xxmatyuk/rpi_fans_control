@@ -29,9 +29,10 @@ def _get_sensor_temperature(pin):
             t = d.temperature
             d.exit()
             return t
-    except Exception as e:
+    except:
         if d:
             d.exit()
+        raise
 
 
 def run_sensors_readings():
@@ -49,4 +50,7 @@ def run_sensors_readings():
 
 
 if __name__ == "__main__":
-    run_sensors_readings()
+    try:
+        run_sensors_readings()
+    except:
+        sys.exit(1)

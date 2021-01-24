@@ -1,4 +1,5 @@
 import time
+import sys
 import atexit
 import RPi.GPIO as GPIO
 
@@ -127,4 +128,7 @@ def run_pwm_controls():
 atexit.register(_stop_pwm_control)
 
 if __name__ == "__main__":
-    run_pwm_controls()
+    try:
+        run_pwm_controls()
+    except:
+        sys.exit(1)
