@@ -39,42 +39,42 @@ class RedisClient:
     def new_lights_enabled(self):
         return True if self._get(settings.NEW_LIGHTS_ENABLED) == "True" else False
 
-
     @property
     def pwm_enabled(self):
         return True if self._get(settings.PWM_ENABLED) == "True" else False
-
 
     @property
     def new_pwm_enabled(self):
         return True if self._get(settings.NEW_PWM_ENABLED) == "True" else False
 
-
     @property
     def current_ctrl_mode(self):
         return self._get(settings.CURR_CTRL_MODE)
-
 
     @property
     def new_ctrl_mode(self):
         return self._get(settings.NEW_CTRL_MODE)
 
-
     @property
     def current_pwm_duty(self):
         return self._get_typed_value(self._get(settings.CURR_PWM_DUTY), int)
-    
 
     @property
     def new_pwm_duty(self):
         return self._get_typed_value(self._get(settings.NEW_PWM_DUTY), int)
 
-
     @property
     def current_t1_temperature(self):
         return self._get_typed_value(self._get(settings.CURR_T1_TEMP), float)
 
-
     @property
     def current_t2_temperature(self):
         return self._get_typed_value(self._get(settings.CURR_T2_TEMP), float)
+
+    @property
+    def current_temperature_threshold(self):
+        return self._get_typed_value(self._get(settings.CURR_TEMP_THRESHOLD), float)
+
+    @property
+    def new_temperature_threshold(self):
+        return self._get_typed_value(self._get(settings.NEW_TEMP_THRESHOLD), float)

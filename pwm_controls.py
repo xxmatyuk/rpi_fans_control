@@ -49,6 +49,13 @@ def run_pwm_controls():
         new_pwm_duty = redis_client.new_pwm_duty
         curr_t1_temp = redis_client.current_t1_temperature
         curr_t2_temp = redis_client.current_t2_temperature
+        curr_temp_threshold = redis_client.current_temperature_threshold
+        new_temp_threshold = redis_client.new_temperature_threshold
+
+        # Temperature threshold value has changed
+        if curr_temp_threshold != new_temp_threshold:
+            redis_client.set_value(settings.CURR_TEMP_THRESHOLD, new_temp_threshold)
+            continue
 
         # Lights state has changed
         if lights_enabled != new_lights_enabled:
@@ -106,16 +113,16 @@ def run_pwm_controls():
             if curr_t1_temp and curr_t2_temp:
                 avg_temp = (curr_t1_temp + curr_t2_temp)/2
                 if fans:
-                    if avg_temp > settings.TEMPERATURE_THRESHOLD+2:
+                    if avg_temp > curr_temp_threshold+2:
                         fans.ChangeDutyCycle(100)
                         redis_client.set_value(settings.CURR_PWM_DUTY, 100)
                         continue
-                    elif avg_temp > settings.TEMPERATURE_THRESHOLD+1:
+                    elif avg_temp > curr_temp_threshold+1:
                         duty = settings.PWM_DEFAULT_DUTY + 5
                         fans.ChangeDutyCycle(duty)
                         redis_client.set_value(settings.CURR_PWM_DUTY, duty)
                         continue
-                    elif avg_temp > settings.TEMPERATURE_THRESHOLD:
+                    elif avg_temp > curr_temp_threshold:
                         fans.ChangeDutyCycle(settings.PWM_DEFAULT_DUTY)
                         redis_client.set_value(settings.CURR_PWM_DUTY, settings.PWM_DEFAULT_DUTY)
                         continue

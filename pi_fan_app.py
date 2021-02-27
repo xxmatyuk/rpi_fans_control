@@ -77,8 +77,12 @@ def get_avg_temp():
 
 @app.route("/pwm/enable")
 def pwm_enable():
+    redis_client.set_value(app.config["CURR_TEMP_THRESHOLD"], app.config["DEFAULT_TEMPERATURE_THRESHOLD"])
+    redis_client.set_value(app.config["NEW_TEMP_THRESHOLD"], app.config["DEFAULT_TEMPERATURE_THRESHOLD"])
+
     mode = request.args.get('mode', default=app.config["MANUAL_MODE"], type=str)
     current_ctrl_mode = redis_client.current_ctrl_mode
+
     if redis_client.pwm_enabled and mode != current_ctrl_mode:
         redis_client.set_value(app.config["NEW_CTRL_MODE"], mode)
         return _get_response(app.config['PWM_ENABLED_MSG'])
@@ -99,6 +103,12 @@ def pwm_disable():
         return _get_response(app.config['PWM_DISABLED_MSG'])
 
     return _get_response(app.config['NO_ACTION_MSG'])
+
+
+@app.route("/pwm/set-temp-threshold/<float:threshold>")
+def pwm_set_temp_threshold(threshold):
+    redis_client.set_value(app.config["NEW_TEMP_THRESHOLD"], threshold)
+    return _get_response(app.config['TEMP_THRESHOLD_SET_MSG'])
 
 
 @app.route("/pwm/set-duty/<int:percent>")
@@ -123,7 +133,7 @@ def stop_fans():
 def lights_on():
     if not redis_client.lights_enabled:
         redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], True)
-        return _get_response(app.config['LIGHTS_ON'])
+        return _get_response(app.config['LIGHTS_ON_MSG'])
 
     return _get_response(app.config['NO_ACTION_MSG'])
 
@@ -132,15 +142,17 @@ def lights_on():
 def lights_off():
     if redis_client.lights_enabled:
         redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], False)
-        return _get_response(app.config['LIGHTS_OFF'])
+        return _get_response(app.config['LIGHTS_OFF_MSG'])
 
     return _get_response(app.config['NO_ACTION_MSG'])
 
 
 @app.route("/stats")
 def stats():
+    """Returns overal stats"""
     pwm_enabled = redis_client.pwm_enabled
     curr_ctrl_mode = redis_client.current_ctrl_mode
+    curr_temp_threshold = redis_client.current_temperature_threshold
     current_pwm_duty = redis_client.current_pwm_duty
     t1 = redis_client.current_t1_temperature
     t2 = redis_client.current_t2_temperature
@@ -148,6 +160,7 @@ def stats():
     lights_enabled = redis_client.lights_enabled
     stats = {
         "current_control_mode": curr_ctrl_mode,
+        "current_temperature_threshold": curr_temp_threshold,
         "pwm_enabled": pwm_enabled,
         "lights_enabled": lights_enabled,
         "t1_temperature": t1,
