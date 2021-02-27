@@ -50,7 +50,4 @@ def run_sensors_readings():
 
 
 if __name__ == "__main__":
-    try:
-        run_sensors_readings()
-    except:
-        sys.exit(1)
+    run_sensors_readings()
