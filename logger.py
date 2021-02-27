@@ -17,4 +17,4 @@ journald_handler.setFormatter(logging.Formatter(
 logger.addHandler(journald_handler)
 
 # optionally set the logging level
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)

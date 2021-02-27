@@ -19,7 +19,7 @@ def _get_dht_sensor(pin):
     except RuntimeError as e:
         d.exit()
         d = adafruit_dht.DHT22(pin)
-        logger.exception(str(e))
+        logger.error(str(e))
     return d
 
 
@@ -32,7 +32,7 @@ def _get_sensor_temperature(pin):
             d.exit()
             return t
     except Exception as e:
-        logger.exception(str(e))
+        logger.error(str(e))
         if d:
             d.exit()
 
