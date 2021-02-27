@@ -17,6 +17,11 @@ DHT_PIN_20 = 20
 DEFAULT_TEMPERATURE_THRESHOLD = 25.1
 DHT_POLLING_TIMEOUT_SECONDS = 5
 
+# Systemd servces names
+DHT_SERVICE = "dht_sensors.service"
+PWM_SERVICE = "pwm_controls.service"
+WEB_APP_SERVICE = "pi_fan_app.service"
+
 # Response messages
 NO_ACTION_MSG = "No action taken."
 PWM_ENABLED_MSG = "Enabled."
