@@ -7,6 +7,7 @@ from flask import Flask, jsonify, request
 from werkzeug.exceptions import InternalServerError
 
 from redis_client import RedisClient
+from logger import logger
 
 # Flask app
 app = Flask(__name__)
@@ -32,7 +33,9 @@ def _init_redis():
 
 def _get_systemd_service_status(service_name):
     """Returns 0 exit code if service is active, whatever else otherwise"""
-    return os.system('systemctl is-active --quiet {}'.format(service_name))
+    res = os.system('systemctl is-active --quiet {}'.format(service_name))
+    logger.info("Systemd result for {} is {}".format(service_name, res))
+    return res
 
 
 def _get_current_rpm(pwm_enabled, current_pwm_duty):
