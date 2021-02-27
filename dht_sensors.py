@@ -5,6 +5,7 @@ import adafruit_dht
 import settings
 
 from redis_client import RedisClient
+from logger import logger
 
 # Redis client wrapper
 redis_client = RedisClient()
@@ -15,9 +16,10 @@ def _get_dht_sensor(pin):
     d = None
     try:
         d = adafruit_dht.DHT22(pin)
-    except RuntimeError:
+    except RuntimeError as e:
         d.exit()
         d = adafruit_dht.DHT22(pin)
+        logger.exception(str(e))
     return d
 
 
@@ -29,10 +31,10 @@ def _get_sensor_temperature(pin):
             t = d.temperature
             d.exit()
             return t
-    except:
+    except Exception as e:
+        logger.exception(str(e))
         if d:
             d.exit()
-        raise
 
 
 def run_sensors_readings():
