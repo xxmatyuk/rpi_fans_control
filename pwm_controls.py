@@ -82,7 +82,10 @@ def run_pwm_controls():
             else:
                 redis_client.set_value(settings.PWM_ENABLED, True)
                 GPIO.setup(settings.FANS_PIN, GPIO.OUT, initial=GPIO.LOW)
-                fans = GPIO.PWM(settings.FANS_PIN, settings.PWM_DEFAULT_FREQ)
+                try:
+                    fans = GPIO.PWM(settings.FANS_PIN, settings.PWM_DEFAULT_FREQ)
+                except RuntimeError as e:
+                    logger.error(str(e))
                 fans.start(settings.PWM_DEFAULT_DUTY)
                 continue
         
