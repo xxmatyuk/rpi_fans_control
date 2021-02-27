@@ -2,3 +2,5 @@ uwsgi
 flask
 redis
 adafruit-circuitpython-dht
+pystemd
+systemd

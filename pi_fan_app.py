@@ -1,13 +1,12 @@
 
-import os
 import atexit
 import json
 
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import InternalServerError
+from pystemd.systemd1 import Unit
 
 from redis_client import RedisClient
-from logger import logger
 
 # Flask app
 app = Flask(__name__)
@@ -32,10 +31,10 @@ def _init_redis():
 
 
 def _get_systemd_service_status(service_name):
-    """Returns 0 exit code if service is active, whatever else otherwise"""
-    res = os.system('systemctl is-active --quiet {}'.format(service_name))
-    logger.info("Systemd result for {} is {}".format(service_name, res))
-    return res
+    """Returns state of a given service"""
+    unit = Unit(service_name)
+    unit.load()
+    return unit.Unit.ActiveState.decode("utf-8")
 
 
 def _get_current_rpm(pwm_enabled, current_pwm_duty):
@@ -195,9 +194,9 @@ def stats():
             "rpm_a12": rpm_a12,
         },
         "systemd_services": {
-            app.config['DHT_SERVICE']: "disabled" if _get_systemd_service_status(app.config['DHT_SERVICE']) else "enabled",
-            app.config['PWM_SERVICE']: "disabled" if _get_systemd_service_status(app.config['PWM_SERVICE']) else "enabled",
-            app.config['WEB_APP_SERVICE']: "disabled" if _get_systemd_service_status(app.config['WEB_APP_SERVICE']) else "enabled",
+            app.config['DHT_SERVICE']: _get_systemd_service_status(app.config['DHT_SERVICE']),
+            app.config['PWM_SERVICE']: _get_systemd_service_status(app.config['PWM_SERVICE']),
+            app.config['WEB_APP_SERVICE']: _get_systemd_service_status(app.config['WEB_APP_SERVICE']),
         }
     }
 
