@@ -6,6 +6,7 @@ import RPi.GPIO as GPIO
 import settings
 
 from redis_client import RedisClient
+from logger import logger
 
 # GPIO initials
 GPIO.setmode(GPIO.BCM)
@@ -137,5 +138,6 @@ atexit.register(_stop_pwm_control)
 if __name__ == "__main__":
     try:
         run_pwm_controls()
-    except:
+    except Exception as e:
+        logger.exception(str(e))
         sys.exit(1)

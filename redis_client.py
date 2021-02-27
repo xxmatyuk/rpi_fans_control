@@ -30,7 +30,6 @@ class RedisClient:
             v = str(v)
         self._set(k, v)
 
-
     @property
     def lights_enabled(self):
         return True if self._get(settings.LIGHTS_ENABLED) == "True" else False
