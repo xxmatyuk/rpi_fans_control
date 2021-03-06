@@ -22,8 +22,8 @@ def _init_redis():
     redis_client.set_value(app.config["LIGHTS_ENABLED"], False)
     redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], False)
     redis_client.set_value(app.config["NEW_PWM_ENABLED"], False)
-    redis_client.set_value(app.config["CURR_CTRL_MODE"], app.config["MANUAL_MODE"])
-    redis_client.set_value(app.config["NEW_CTRL_MODE"], app.config["MANUAL_MODE"])
+    redis_client.set_value(app.config["CURR_CTRL_MODE"], app.config["AUTO_MODE"])
+    redis_client.set_value(app.config["NEW_CTRL_MODE"], app.config["AUTO_MODE"])
     redis_client.set_value(app.config["CURR_PWM_DUTY"], 0)
     redis_client.set_value(app.config["NEW_PWM_DUTY"], 0)
     redis_client.set_value(app.config["CURR_T1_TEMP"], -100.0)
@@ -75,7 +75,7 @@ def pwm_enable():
     redis_client.set_value(app.config["CURR_TEMP_THRESHOLD"], app.config["DEFAULT_TEMPERATURE_THRESHOLD"])
     redis_client.set_value(app.config["NEW_TEMP_THRESHOLD"], app.config["DEFAULT_TEMPERATURE_THRESHOLD"])
 
-    mode = request.args.get('mode', default=app.config["MANUAL_MODE"], type=str)
+    mode = request.args.get('mode', default=app.config["AUTO_MODE"], type=str)
     current_ctrl_mode = redis_client.current_ctrl_mode
 
     if redis_client.pwm_enabled and mode != current_ctrl_mode:
