@@ -37,22 +37,6 @@ def _get_systemd_service_status(service_name):
     return unit.Unit.ActiveState.decode("utf-8")
 
 
-def _get_current_rpm(pwm_enabled, current_pwm_duty):
-    """Returns RPM values based on PWM status and its values of duty"""
-
-    if not pwm_enabled:
-        return app.config['DEFAULT_RPM_A6'], app.config['DEFAULT_RPM_A12']
-    elif pwm_enabled and current_pwm_duty == 0:
-        return 0, 0
-    elif pwm_enabled and current_pwm_duty == 100:
-        return app.config['DEFAULT_RPM_A6'], app.config['DEFAULT_RPM_A12']
-    else:
-        return (
-            (current_pwm_duty*app.config['DEFAULT_RPM_A6'])/100, 
-            (current_pwm_duty*app.config['DEFAULT_RPM_A12'])/100
-        )
-
-
 def _get_average_temperature():
     """Gets average temperature from two available sensors"""
     t1 = redis_client.current_t1_temperature
@@ -173,15 +157,12 @@ def index():
     current_pwm_duty = redis_client.current_pwm_duty
     t1 = redis_client.current_t1_temperature
     t2 = redis_client.current_t2_temperature
-    rpm_a6, rpm_a12 = _get_current_rpm(pwm_enabled, current_pwm_duty)
     lights_enabled = redis_client.lights_enabled
 
     data = {
         "t1_temperature": t1,
         "t2_temperature": t2,
         "avg_temperature": (t1+t2)/2 if t1 and t2 else -100,
-        "rpm_a6": rpm_a6,
-        "rpm_a12": rpm_a12,
         "current_control_mode": curr_ctrl_mode,
         "current_temperature_threshold": curr_temp_threshold,
         "pwm_state": "enabled" if pwm_enabled else "disabled",
