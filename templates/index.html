@@ -3,7 +3,6 @@
 {% block content %}
     <div class="container">
         <h1 class="mt-5">Overall stats</h1>
-        <p class="lead"><u>Controls:</u></p>
         <p>
             <table class="table">
                 <tbody>
@@ -27,13 +26,6 @@
                         <td>PWM state</td>
                         <td>{{ pwm_state }}</td>
                     </tr>
-                </tbody>
-            </table>
-        </p>
-        <p class="lead"><u>Systemd services:</u></p>
-        <p>
-            <table class="table">
-                <tbody>
                     <tr>
                         <td>Left sensor</td>
                         <td>{{ t1_temperature }}</td>
@@ -46,13 +38,6 @@
                         <td>Average temperature</td>
                         <td>{{ avg_temperature }}</td>
                     </tr>
-                </tbody>
-            </table>
-        </p>
-        <p class="lead"><u>Systemd services:</u></p>
-        <p>
-            <table class="table">
-                <tbody>
                     <tr>
                         <td>dht_sensors.service</td>
                         <td>{{ dht_deamon_state }}</td>
