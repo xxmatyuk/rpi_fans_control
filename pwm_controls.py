@@ -65,6 +65,7 @@ def run_pwm_controls():
                 if lights:
                     lights.start(0)
             else:
+                GPIO.setmode(GPIO.BCM)
                 GPIO.setup(settings.LIGHTS_PIN, GPIO.OUT, initial=GPIO.LOW)
                 if not lights:
                     lights = GPIO.PWM(settings.LIGHTS_PIN, settings.LIGHT_DEFAULT_FREQ)
