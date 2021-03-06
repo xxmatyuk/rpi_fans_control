@@ -2,7 +2,7 @@
 import atexit
 import json
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from werkzeug.exceptions import InternalServerError
 from pystemd.systemd1 import Unit
 
@@ -164,9 +164,9 @@ def lights_off():
     return _get_response(app.config['NO_ACTION_MSG'])
 
 
-@app.route("/stats")
-def stats():
-    """Returns overal stats"""
+@app.route("/")
+def index():
+    """Index page"""
     pwm_enabled = redis_client.pwm_enabled
     curr_ctrl_mode = redis_client.current_ctrl_mode
     curr_temp_threshold = redis_client.current_temperature_threshold
@@ -176,31 +176,24 @@ def stats():
     rpm_a6, rpm_a12 = _get_current_rpm(pwm_enabled, current_pwm_duty)
     lights_enabled = redis_client.lights_enabled
 
-    stats = {
-        "sensors": {
-            "t1_temperature": t1,
-            "t2_temperature": t2,
-            "avg_temperature": (t1+t2)/2 if t1 and t2 else None,
-        },
-        "controls": {
-            "current_control_mode": curr_ctrl_mode,
-            "current_temperature_threshold": curr_temp_threshold,
-            "pwm_enabled": pwm_enabled,
-            "lights_enabled": lights_enabled,
-            "pwm_duty_cycle": current_pwm_duty,
-        },
-        "fans": {
-            "rpm_a6": rpm_a6,
-            "rpm_a12": rpm_a12,
-        },
-        "systemd_services": {
-            app.config['DHT_SERVICE']: _get_systemd_service_status(app.config['DHT_SERVICE']),
-            app.config['PWM_SERVICE']: _get_systemd_service_status(app.config['PWM_SERVICE']),
-            app.config['WEB_APP_SERVICE']: _get_systemd_service_status(app.config['WEB_APP_SERVICE']),
-        }
+    data = {
+        "t1_temperature": t1,
+        "t2_temperature": t2,
+        "avg_temperature": (t1+t2)/2 if t1 and t2 else -100,
+        "rpm_a6": rpm_a6,
+        "rpm_a12": rpm_a12,
+        "current_control_mode": curr_ctrl_mode,
+        "current_temperature_threshold": curr_temp_threshold,
+        "pwm_state": "enabled" if pwm_enabled else "disabled",
+        "lights_state": "enabled" if lights_enabled else "disabled",
+        "pwm_duty_cycle": "{}%".format(current_pwm_duty),
+        "dht_deamon_state": _get_systemd_service_status(app.config['DHT_SERVICE']),
+        "app_daemon_state": _get_systemd_service_status(app.config['PWM_SERVICE']),
+        "pwm_daemon_state": _get_systemd_service_status(app.config['WEB_APP_SERVICE'])
     }
 
-    return jsonify(stats)
+    return render_template("index.html", **data)
+
 
 # Re-init redis just in case
 atexit.register(_init_redis)

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="mt-5">Overall stats</h1>
+        <p class="lead"><u>Controls:</u></p>
+        <p>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td>Current control mode</td>
+                        <td>{{ current_control_mode }}</td>
+                    </tr>
+                    <tr>
+                        <td>Current temperature threshold</td>
+                        <td>{{ current_temperature_threshold }}</td>
+                    </tr>
+                    <tr>
+                        <td>Lights state</td>
+                        <td>{{ lights_state }}</td>
+                    </tr>
+                    <tr>
+                        <td>PWM duty cycle</td>
+                        <td>{{ pwm_duty_cycle }}</td>
+                    </tr>
+                    <tr>
+                        <td>PWM state</td>
+                        <td>{{ pwm_state }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </p>
+        <p class="lead"><u>Fans:</u></p>
+        <p>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td>Current A12 Fan RPM</td>
+                        <td>{{ rpm_a12 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Current A6 Fans RPM</td>
+                        <td>{{ rpm_a6 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </p>
+        <p class="lead"><u>Systemd services:</u></p>
+        <p>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td>Left sensor</td>
+                        <td>{{ t1_temperature }}</td>
+                    </tr>
+                    <tr>
+                        <td>Right sensor</td>
+                        <td>{{ t2_temperature }}</td>
+                    </tr>
+                    <tr>
+                        <td>Average temperature</td>
+                        <td>{{ avg_temperature }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </p>
+        <p class="lead"><u>Systemd services:</u></p>
+        <p>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td>dht_sensors.service</td>
+                        <td>{{ dht_deamon_state }}</td>
+                    </tr>
+                    <tr>
+                        <td>pi_fan_app.service</td>
+                        <td>{{ app_daemon_state }}</td>
+                    </tr>
+                    <tr>
+                        <td>pwm_controls.service</td>
+                        <td>{{ pwm_daemon_state }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </p>
+
+    </div>
+
+{% endblock %}
