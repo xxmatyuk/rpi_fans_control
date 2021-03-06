@@ -81,6 +81,7 @@ def run_pwm_controls():
                 fans = None
             else:
                 redis_client.set_value(settings.PWM_ENABLED, True)
+                GPIO.setmode(GPIO.BCM)
                 GPIO.setup(settings.FANS_PIN, GPIO.OUT, initial=GPIO.LOW)
                 try:
                     fans = GPIO.PWM(settings.FANS_PIN, settings.PWM_DEFAULT_FREQ)
