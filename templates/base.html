@@ -51,7 +51,7 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="btn-group" role="group">
                         {% if pwm_state == "enabled" %}
-                            <form action="/pwm/disable" type="post">
+                            <form action="/pwm/disable" method="post">
                                 <input type="submit" class="btn btn-danger" value="Disable PWM">
                             </form>
                         {% else %}
@@ -60,11 +60,11 @@
                             </form>
                         {% endif %}
                         {% if lights_state == "enabled" %}
-                            <form action="/lights/on" method="post">
+                            <form action="/lights/off" method="post">
                                 <input type="submit" class="btn btn-danger" value="Disable Light">
                             </form>
                         {% else %}
-                            <form action="/lights/off" method="post">
+                            <form action="/lights/on" method="post">
                                 <input type="submit" class="btn btn-success" value="Enable Light">
                             </form>
                         {% endif %}
