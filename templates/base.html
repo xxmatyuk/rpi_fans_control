@@ -49,11 +49,26 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
-                    <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Controls</a>
-                    </li>
-                    </ul>
+                    <div class="btn-group" role="group">
+                        {% if pwm_state == "enabled" %}
+                            <form action="/pwm/disable" type="post">
+                                <input type="submit" class="btn btn-danger" value="Disable PWM">
+                            </form>
+                        {% else %}
+                            <form action="/pwm/disable?mode=auto" method="post">
+                                <input type="submit" class="btn btn-success" value="Enable PWM">
+                            </form>
+                        {% endif %}
+                        {% if lights_state == "enabled" %}
+                            <form action="/lights/on" method="post">
+                                <input type="submit" class="btn btn-danger" value="Disable Light">
+                            </form>
+                        {% else %}
+                            <form action="/lights/off" method="post">
+                                <input type="submit" class="btn btn-success" value="Enable Light">
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
                 </div>
             </nav>

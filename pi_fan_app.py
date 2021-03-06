@@ -2,7 +2,7 @@
 import atexit
 import json
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, redirect
 from werkzeug.exceptions import InternalServerError
 from pystemd.systemd1 import Unit
 
@@ -69,7 +69,7 @@ def get_avg_temp():
     return str(_get_average_temperature())
 
 
-@app.route("/pwm/enable")
+@app.route("/pwm/enable", methods=['POST'])
 def pwm_enable():
     """Enables PWM pad controls"""
     redis_client.set_value(app.config["CURR_TEMP_THRESHOLD"], app.config["DEFAULT_TEMPERATURE_THRESHOLD"])
@@ -80,25 +80,22 @@ def pwm_enable():
 
     if redis_client.pwm_enabled and mode != current_ctrl_mode:
         redis_client.set_value(app.config["NEW_CTRL_MODE"], mode)
-        return _get_response(app.config['PWM_ENABLED_MSG'])
     elif not redis_client.pwm_enabled:
         redis_client.set_value(app.config["NEW_PWM_ENABLED"], True)
         redis_client.set_value(app.config["NEW_CTRL_MODE"], mode)
         redis_client.set_value(app.config["NEW_PWM_DUTY"], app.config["PWM_DEFAULT_DUTY"])
-        return _get_response(app.config['PWM_ENABLED_MSG'])
 
-    return _get_response(app.config['NO_ACTION_MSG'])
+    return redirect("/", code=302)
 
 
-@app.route("/pwm/disable")
+@app.route("/pwm/disable", methods=['POST'])
 def pwm_disable():
     """Disables PWM pad controls"""
     if redis_client.pwm_enabled:
         redis_client.set_value(app.config["NEW_PWM_ENABLED"], False)
         redis_client.set_value(app.config["NEW_PWM_DUTY"], 0)
-        return _get_response(app.config['PWM_DISABLED_MSG'])
 
-    return _get_response(app.config['NO_ACTION_MSG'])
+    return redirect("/", code=302)
 
 
 @app.route("/pwm/set-temp-threshold/<float:threshold>")
@@ -128,24 +125,22 @@ def stop_fans():
     return _get_response(app.config['NO_ACTION_MSG'])
 
 
-@app.route("/lights/on")
+@app.route("/lights/on", methods=['POST'])
 def lights_on():
     """Turns light on"""
     if not redis_client.lights_enabled:
         redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], True)
-        return _get_response(app.config['LIGHTS_ON_MSG'])
 
-    return _get_response(app.config['NO_ACTION_MSG'])
+    return redirect("/", code=302)
 
 
-@app.route("/lights/off")
+@app.route("/lights/off", methods=['POST'])
 def lights_off():
     """Turns light off"""
     if redis_client.lights_enabled:
         redis_client.set_value(app.config["NEW_LIGHTS_ENABLED"], False)
-        return _get_response(app.config['LIGHTS_OFF_MSG'])
 
-    return _get_response(app.config['NO_ACTION_MSG'])
+    return redirect("/", code=302)
 
 
 @app.route("/")
@@ -172,7 +167,7 @@ def index():
         "app_daemon_state": _get_systemd_service_status(app.config['PWM_SERVICE']),
         "pwm_daemon_state": _get_systemd_service_status(app.config['WEB_APP_SERVICE'])
     }
-
+    
     return render_template("index.html", **data)
 
 
