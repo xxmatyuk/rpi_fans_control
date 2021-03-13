@@ -6,7 +6,7 @@ class RedisClient:
 
     """Wrapper class for redis client"""
 
-    def __init__(self, user=None, password=None, host='localhost', port=6379, db=0):
+    def __init__(self, user=None, password=None, host="localhost", port=6379, db=0):
         self._conn = redis.Redis(host=host, port=port, db=db, charset="utf-8", decode_responses=True)
 
 

@@ -10,7 +10,7 @@ journald_handler = JournaldLogHandler()
 
 # set a formatter to include the level name
 journald_handler.setFormatter(logging.Formatter(
-    '[%(levelname)s] %(message)s'
+    "[%(levelname)s] %(message)s"
 ))
 
 # add the journald handler to the current logger
