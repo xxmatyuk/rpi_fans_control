@@ -116,8 +116,6 @@
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onreadystatechange = function() {
                     if (this.readyState === XMLHttpRequest.DONE) {
-                        // this is bad, but I aint't in no rush
-                        await new Promise(r => setTimeout(r, 1000));
                         document.location = "/";
                     }
                 }
