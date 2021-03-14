@@ -116,7 +116,7 @@
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onreadystatechange = function() {
                     if (this.readyState === XMLHttpRequest.DONE) {
-                        setTimeout("location.reload(true);", 2000);
+                        setTimeout("location.reload(true);", 1000);
                     }
                 }
                 xhr.send(null);
