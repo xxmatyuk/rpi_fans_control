@@ -109,14 +109,16 @@
             </div>
         </div>
         <script src="https://getbootstrap.com/docs/5.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
-        <script type="text/javascript">   
+        <script type="text/javascript">
             function sendPOST(url) {
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", url, true);
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onreadystatechange = function() {
                     if (this.readyState === XMLHttpRequest.DONE) {
-                        document.location = "/"
+                        // this is bad, but I aint't in no rush
+                        await new Promise(r => setTimeout(r, 1000));
+                        document.location = "/";
                     }
                 }
                 xhr.send(null);

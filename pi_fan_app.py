@@ -159,8 +159,8 @@ def pwm_disable():
     return _get_response(app.config["NO_ACTION_MSG"])
 
 
-@app.route("/pwm/set-temp-threshold/<string:threshold>")
-def pwm_set_temp_threshold(threshold, methods=["POST"]):
+@app.route("/pwm/set-temp-threshold/<string:threshold>", methods=["POST"])
+def pwm_set_temp_threshold(threshold):
     """Sets fan"s enabling temperature threshold"""
     try:
         threshold = float(threshold)
@@ -173,9 +173,14 @@ def pwm_set_temp_threshold(threshold, methods=["POST"]):
     return _get_response(app.config["TEMP_THRESHOLD_SET_MSG"])
 
 
-@app.route("/pwm/set-duty/<int:percent>")
-def pwm_set_duty(percent, methods=["POST"]):
+@app.route("/pwm/set-duty/<string:percent>", methods=["POST"])
+def pwm_set_duty(percent):
     """Sets PWM duty cycle"""
+    try:
+        percent = int(percent)
+    except ValueError:
+        return _get_error_response(app.config.get("UNABLE_TO_SET_PROP_MSG").format(app.config["NEW_PWM_DUTY"]))
+
     if redis_client.pwm_enabled and redis_client.current_ctrl_mode == app.config["MANUAL_MODE"]:
         if not _set_and_wait(app.config["NEW_PWM_DUTY"], percent):
             return _get_error_response(app.config.get("UNABLE_TO_SET_PROP_MSG").format(app.config["NEW_PWM_DUTY"]))
