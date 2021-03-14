@@ -20,48 +20,117 @@
         </style>
         <link href="https://getbootstrap.com/docs/5.0/examples/sticky-footer-navbar/sticky-footer-navbar.css" rel="stylesheet">
     </head>
+    <!-- BODY -->
     <body class="d-flex flex-column h-100">
+        <!-- NAVBAR -->
         <header>
             <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
                 <div class="container-fluid">
-                <a class="navbar-brand" href="#">RPi Fan UI</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarCollapse">
-                    <div class="btn-group" role="group">
-                        {% if pwm_state == "enabled" %}
-                            <form action="/pwm/disable" method="post">
-                                <input type="submit" class="btn btn-danger" value="Disable PWM">
-                            </form>
-                        {% else %}
-                            <form action="/pwm/enable" method="post">
-                                <input type="submit" class="btn btn-success" value="Enable PWM">
-                            </form>
-                        {% endif %}
-                        {% if lights_state == "enabled" %}
-                            <form action="/lights/off" method="post">
-                                <input type="submit" class="btn btn-danger" value="Disable Light">
-                            </form>
-                        {% else %}
-                            <form action="/lights/on" method="post">
-                                <input type="submit" class="btn btn-success" value="Enable Light">
-                            </form>
-                        {% endif %}
+                    <a class="navbar-brand" href="#">RPi Fan UI</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="btn-group" role="group">
+                            <!-- PWM -->
+                            {% if data["pwm_enabled"] == True %}
+                                <input type="button" class="btn btn-danger" value="Disable PWM" onclick="sendPOST('/pwm/disable');">
+                            {% else %}
+                                <input type="submit" class="btn btn-success" value="Enable PWM" data-bs-toggle="modal" data-bs-target="#pwmModal">
+                            {% endif %}
+
+                            <!-- LIGHTS -->
+                            {% if data["lights_enabled"] == True %}
+                                <input type="button" class="btn btn-danger" value="Disable Light" onclick="sendPOST('/lights/off');">
+                            {% else %}
+                                <input type="submit" class="btn btn-success" value="Enable Light" onclick="sendPOST('/lights/on');">
+                            {% endif %}
+
+                            <!-- TEMPERATURE THRESHOLD -->
+                            {% if data["pwm_enabled"] == True and data["current_ctrl_mode"] == "auto" %}
+                                <input type="button" class="btn btn-success" value="Set threshold" data-bs-toggle="modal" data-bs-target="#thresholdModal">
+                            {% else %}
+                                <input type="submit" class="btn btn-secondary" value="Set threshold" disabled="true">
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
                 </div>
             </nav>
         </header>
+        <!--CONTENT PLACEHOLDER-->
         <main class="flex-shrink-0">
             {% block content %}
             {% endblock %}
         </main>
+        <!--FOOTER-->
         <footer class="footer mt-auto py-3 bg-light">
             <div class="container">
                 <span class="text-muted">© 2021 xxmatyuk</span>
             </div>
         </footer>
+        <!--PWM MODAL-->
+        <div class="modal fade" id="pwmModal" tabindex="-1" aria-labelledby="pwmModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pwmModalLabel">Enable PWM</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <select class="form-select" id="pwmModeInputSelect">
+                        <option selected value="auto">Auto</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="enablePWM();">Enable</button>
+                </div>
+                </div>
+            </div>
+        </div>
+        <!--THRESHOLD MODAL-->
+        <div class="modal fade" id="thresholdModal" tabindex="-1" aria-labelledby="thresholdModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="thresholdModalLabel">Set temperature threshold</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="pwmThresholdInput" class="form-label">Temperature value: </label>
+                    <input type="text" id="pwmThresholdInput">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="setThreshold();">Set</button>
+                </div>
+                </div>
+            </div>
+        </div>
         <script src="https://getbootstrap.com/docs/5.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+        <script type="text/javascript">   
+            function sendPOST(url) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", url, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function() {
+                    if (this.readyState === XMLHttpRequest.DONE) {
+                        document.location = "/"
+                    }
+                }
+                xhr.send(null);
+            }
+            
+            function enablePWM() {
+                inputSelect = document.getElementById("pwmModeInputSelect");
+                sendPOST("/pwm/enable/" + inputSelect.value);
+            }
+
+            function setThreshold() {
+                input = document.getElementById("pwmThresholdInput");
+                sendPOST("/pwm/set-temp-threshold/" + input.value);
+            }
+        </script>
     </body>
 </html>

@@ -21,7 +21,9 @@ app.config.from_object("settings")
 redis_client = RedisClient()
 
 OK = HTTPStatus.OK.value
+BAD_REQUEST = HTTPStatus.BAD_REQUEST.value
 INTERNAL_SERVER_ERROR = HTTPStatus.INTERNAL_SERVER_ERROR.value
+
 
 def _init_redis():
     """Fills Redis with default values"""
@@ -113,10 +115,12 @@ def get_avg_temp():
     return str(_get_average_temperature())
 
 
-@app.route("/pwm/enable", methods=["POST"])
-def pwm_enable():
+@app.route("/pwm/enable/<string:mode>", methods=["POST"])
+def pwm_enable(mode):
     """Enables PWM pad controls"""
-    mode = request.args.get("mode", default=app.config["AUTO_MODE"], type=str)
+    if mode not in ["auto", "manual"]:
+        return _get_response(app.config["BAD_MODE_MSG"], status=BAD_REQUEST)
+
     current_ctrl_mode = redis_client.current_ctrl_mode
     pwm_enabled = redis_client.pwm_enabled
 
@@ -155,9 +159,14 @@ def pwm_disable():
     return _get_response(app.config["NO_ACTION_MSG"])
 
 
-@app.route("/pwm/set-temp-threshold/<float:threshold>")
+@app.route("/pwm/set-temp-threshold/<string:threshold>")
 def pwm_set_temp_threshold(threshold, methods=["POST"]):
     """Sets fan"s enabling temperature threshold"""
+    try:
+        threshold = float(threshold)
+    except ValueError:
+        return _get_error_response(app.config.get("UNABLE_TO_SET_PROP_MSG").format(app.config["NEW_TEMP_THRESHOLD"]))
+
     if not _set_and_wait(app.config["NEW_TEMP_THRESHOLD"], threshold):
         return _get_error_response(app.config.get("UNABLE_TO_SET_PROP_MSG").format(app.config["NEW_TEMP_THRESHOLD"]))
 
@@ -258,19 +267,19 @@ def index():
     t2 = redis_client.current_t2_temperature
     lights_enabled = redis_client.lights_enabled
 
-    data = (
-        (app.config["CURR_CTRL_MODE"], curr_ctrl_mode),
-        (app.config["CURR_TEMP_THRESHOLD"], curr_temp_threshold),
-        (app.config["LIGHTS_ENABLED"],lights_enabled),
-        (app.config["PWM_ENABLED"], pwm_enabled),
-        (app.config["CURR_PWM_DUTY"], "{}%".format(current_pwm_duty)),
-        (app.config["CURR_T1_TEMP"], t1),
-        (app.config["CURR_T2_TEMP"], t2),
-        (app.config["AVG_TEMP"], (t1+t2)/2 if t1 and t2 else None),
-        (app.config["DHT_SERVICE"], _get_systemd_service_status(app.config["DHT_SERVICE"])),
-        (app.config["PWM_SERVICE"], _get_systemd_service_status(app.config["PWM_SERVICE"])),
-        (app.config["WEB_APP_SERVICE"], _get_systemd_service_status(app.config["WEB_APP_SERVICE"]))
-    )
+    data = {
+        app.config["CURR_CTRL_MODE"]: curr_ctrl_mode,
+        app.config["CURR_TEMP_THRESHOLD"]: curr_temp_threshold,
+        app.config["LIGHTS_ENABLED"]: lights_enabled,
+        app.config["PWM_ENABLED"]: pwm_enabled,
+        app.config["CURR_PWM_DUTY"]: "{}%".format(current_pwm_duty),
+        app.config["CURR_T1_TEMP"]: t1,
+        app.config["CURR_T2_TEMP"]: t2,
+        app.config["AVG_TEMP"]: (t1+t2)/2 if t1 and t2 else None,
+        app.config["DHT_SERVICE"]: _get_systemd_service_status(app.config["DHT_SERVICE"]),
+        app.config["PWM_SERVICE"]: _get_systemd_service_status(app.config["PWM_SERVICE"]),
+        app.config["WEB_APP_SERVICE"]: _get_systemd_service_status(app.config["WEB_APP_SERVICE"])
+    }
 
     return render_template("index.html", data=data)
 
