@@ -64,6 +64,7 @@ def run_pwm_controls():
             if new_lights_enabled == False:
                 if lights:
                     lights.start(0)
+                continue
             else:
                 GPIO.setmode(GPIO.BCM)
                 GPIO.setup(settings.LIGHTS_PIN, GPIO.OUT, initial=GPIO.LOW)
@@ -80,6 +81,7 @@ def run_pwm_controls():
                     fans.stop()
                 GPIO.cleanup()
                 fans = None
+                continue
             else:
                 GPIO.setmode(GPIO.BCM)
                 GPIO.setup(settings.FANS_PIN, GPIO.OUT, initial=GPIO.LOW)
