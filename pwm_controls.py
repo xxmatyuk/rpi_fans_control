@@ -97,6 +97,7 @@ def run_pwm_controls():
         # PWM is enabled and control mode has changed
         if curr_ctrl_mode != new_ctrl_mode:
             redis_client.set_value(settings.CURR_CTRL_MODE, new_ctrl_mode)
+            continue
 
         # Manual mode
         if curr_ctrl_mode == settings.MANUAL_MODE and curr_pwm_duty != new_pwm_duty:
