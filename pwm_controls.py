@@ -64,14 +64,13 @@ def run_pwm_controls():
             if new_lights_enabled == False:
                 if lights:
                     lights.start(0)
-                continue
             else:
                 GPIO.setmode(GPIO.BCM)
                 GPIO.setup(settings.LIGHTS_PIN, GPIO.OUT, initial=GPIO.LOW)
                 if not lights:
                     lights = GPIO.PWM(settings.LIGHTS_PIN, settings.LIGHT_DEFAULT_FREQ)
                 lights.start(settings.LIGHTS_PWM_DEFAULT)
-                continue
+            continue
 
         # PWM state has changed
         if pwm_enabled != new_pwm_enabled:
@@ -81,7 +80,6 @@ def run_pwm_controls():
                     fans.stop()
                 GPIO.cleanup()
                 fans = None
-                continue
             else:
                 GPIO.setmode(GPIO.BCM)
                 GPIO.setup(settings.FANS_PIN, GPIO.OUT, initial=GPIO.LOW)
@@ -90,7 +88,7 @@ def run_pwm_controls():
                 except RuntimeError as e:
                     logger.error(str(e))
                 fans.start(settings.PWM_DEFAULT_DUTY)
-                continue
+            continue
 
         # PWM is disabled, no need to go down below
         if pwm_enabled == False:
@@ -115,20 +113,17 @@ def run_pwm_controls():
                 if avg_temp > curr_temp_threshold + 2:
                     fans.ChangeDutyCycle(100)
                     redis_client.set_value(settings.CURR_PWM_DUTY, 100)
-                    continue
                 elif avg_temp > curr_temp_threshold+1:
                     duty = settings.PWM_DEFAULT_DUTY + 5
                     fans.ChangeDutyCycle(duty)
                     redis_client.set_value(settings.CURR_PWM_DUTY, duty)
-                    continue
                 elif avg_temp > curr_temp_threshold:
                     fans.ChangeDutyCycle(settings.PWM_DEFAULT_DUTY)
                     redis_client.set_value(settings.CURR_PWM_DUTY, settings.PWM_DEFAULT_DUTY)
-                    continue
                 else:
                     fans.ChangeDutyCycle(0)
                     redis_client.set_value(settings.CURR_PWM_DUTY, 0)
-                    continue
+                continue
 
 
 # Do a clean-up
